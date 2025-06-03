@@ -1,0 +1,569 @@
+\documentclass[UTF2]{ctexart}
+\usepackage[utf8]{inputenc}    % 支持UTF-8编码
+\usepackage{amsmath}           % 增强数学公式支持（如 align, gather, matrix 等）
+\usepackage{graphicx}          % 插入图片（如 PNG, JPG, PDF）
+\usepackage[hidelinks]{hyperref}          % 超链接支持（参考文献、目录跳转）
+
+\usepackage{geometry}
+\geometry{a4paper,left=2cm,right=2cm,top=2.5cm,bottom=2.5cm}
+
+\makeatletter % 允许访问内部命令
+\renewcommand{\@maketitle}{%
+	\newpage
+	\null
+	\vskip 8em % 标题上方的间距
+	\begin{center}%
+		{\LARGE\bfseries \@title \par}% 标题样式
+		\vskip 300pt % ★ 增大标题-作者间距 ★
+		{\large \@author}% 作者样式
+	\end{center}%
+	\par \vskip 1.5em % 作者下方的间距
+}
+\makeatother
+
+\title{
+	南京大学 ~ 模拟电路实验
+	
+	综合实验------方波的产生、分解与合成
+	
+	实验报告
+}
+\author{高荧泽~231880318}
+
+\begin{document}
+	\begin{titlepage}
+		\maketitle
+		\setcounter{page}{0}
+		\thispagestyle{empty}
+	\end{titlepage}
+	
+	\begin{abstract}
+		
+		\textit{本次实验旨在利用运算放大器(后文中简称为"运放")构建1kHz方波发生器, 各类型滤波器和加法器, 以此实现方波的发生, 分解与合成. 实验通过理论计算与Mulitisim仿真结合的方式实现各类型滤波器设计. 最终, 实验结果符合预期, 各端口输出的波形符合实验要求, 可以认为实验成功.}
+		
+		\textit{关键词: 运算放大器; 方波发生; 滤波器; 加法器}
+	\end{abstract}
+	
+	\newpage
+    \tableofcontents
+	
+	\newpage
+	
+	% 第一部分 实验原理与目的
+	\section{实验原理与目的}
+	
+	\subsection{实验原理}
+	
+	本部分旨在对实验设计到的主要电路结构做简要介绍, 而非对其特性展开具体分析. 有关各结构数值计算的内容, 将在后文中更加恰当的部分进行讨论.
+	\subsubsection{由运放构成的方波发生器}
+	
+	由运放构成的方波发生器电路图如图1所示. 
+	
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=0.4\textwidth]{1}
+		\caption{方波发生器}
+	\end{figure}
+	
+	方波产生电路是一种能够直接产生方波或矩形波的非正弦信号发生电路. 由于方波或矩形波包含极丰富的谐波, 因此, 这种电路又称为多谐振荡电路.
+	
+	它在迟滞比较器的基础上, 增加了一个由 $R_f$和$C $组成的积分电路, 把输出电压经 $R_f$和$C$反馈到比较器的反相端. 在比较器的输出端引入限流电阻 $R$ 和两个背靠背的齐纳二极管, 就组成了一个如图1所示的双向限幅方波发生电路.
+	
+	\subsubsection{压控电压源型二阶有源低通滤波电路}
+	
+	压控电压源型二阶有源低通滤波电路在后文中简称为"低通滤波器".
+	
+	实验中使用的低通滤波器电路如图2所示. 在此需要强调的是, 其品质因数$Q$对滤波器的幅频响应特性具有较大的影响, $Q$值越大, 过渡带衰减越快. 然而, 若$Q$过大, 电路会发生自激振荡,失去滤波效果. 因此, 合理的$Q$值,或者说合理的电压增益$A_{vf}$选取至关重要. 一般地, 要求电压增益$A_{vf} < 3$, 以保证电路滤波功能正常, 不发生自激振荡.
+	
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=0.4\textwidth]{2}
+		\caption{低通滤波器}
+	\end{figure}
+	
+	
+	\subsubsection{压控电压源型二阶带通滤波电路}
+	
+	压控电压源型二阶带通滤波电路在后文中简称为"带通滤波器".
+	
+	实验中使用的带通滤波器如图3所示. 其中需要注意的是, 电压增益$A_{vf}$的选取与低通滤波器一样, 不能大于3, 以保证电路不发生自激振荡, 确保电路正确行使其滤波功能.
+	
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=0.4\textwidth]{3}
+		\caption{带通滤波器}
+	\end{figure}
+	
+	\subsubsection{一阶超前全通滤波电路}
+	一阶超前全通滤波电路在本次实验中起到改变输入波形相位的作用. 因此, 后文中, 简称这一电路结构为"移相器". 其电路图如图4所示.
+	
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=0.4\textwidth]{4}
+		\caption{移相器}
+	\end{figure}
+	
+	移相器是全通滤波器, 只有通带,没有阻带. 因此, 在全频率范围内都没有衰减, 只有其相移特性随输入信号频率改变而改变. 移相器通常用于对特定频率的信号进行移相.
+	
+	\subsubsection{反向加法器}
+	
+	反向加法器电路如图5所示. 其输出信号是对输入信号的加权后加和, 最后取反. 本次实验中, 该电路结构用于综合设计的最后一项任务, 即实现方波信号合成中的各谐波分量加和.
+	
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=0.4\textwidth]{5}
+		\caption{反向加法器}
+	\end{figure}
+	
+	\subsection{实验目的}
+	
+	通过傅里叶分析验证方波可由基波与奇次谐波合成,设计并搭建基于运放的方波发生、带通滤波、移相及加法电路,实现从1kHz方波中提取1kHz、3kHz、5kHz正弦分量,调整其幅值比(1:1/3:1/5)与相位一致性后合成近似方波.探究实际电路中元件误差对滤波特性及合成效果的影响,掌握多模块协同调试的方法,深化对模拟电路频域分析与信号合成的理解.
+	
+	\section{软件环境与数据约定}
+	
+	\subsection{软件环境}
+	
+	\begin{enumerate}
+		\item 仿真软件: NI Multisim 14.3 Education Edition 
+		\item 数据处理: OriginPro 2025 (64-bit) SR1 10.2.0.196 (Education Edition) 
+	\end{enumerate}
+	
+	\subsection{数据约定}
+	本报告中, 若无特殊说明, 所出示的电压值均为峰峰值$V_{pp}$.
+	
+	\section{实验内容与分析}
+	
+	本部分内容是报告的主体部分. 旨在介绍综合实验电路的各个部分的设计方法与分析方法. 并对实际搭建的电路性能的测量结果进行分析, 进而验证实验的正确性.
+	
+	为了实现预期功能, 首先可对整体的实验要求进行拆分. 不难看出, 本次实验看似复杂(其实看似也不复杂), 实际上只需实现几个简单的电路结构: 方波发生器, 低通滤波器, 带通滤波器, 移相器, 反向加法器. 搭建好各部分电路之后, 只需合理连接即可.
+	
+	本次实验的关键在于各部分电路的设计, 其主要工作量和考核对理论知识进行实际应用的部分在于各部分电路参数的计算和合理选取. 实验中, 笔者采取先根据教材选择合适电路结构; 再结合已有元件参数进行理论计算, 确定元件取值; 其次仿真验证, 确定功能无误; 最后在面包板上搭建电路的实验流程.
+	
+	在接下来的部分, 将结合整体电路的逻辑结构, 对各部分电路(方波发生器, 低通滤波器, 带通滤波器, 移相器, 反向加法器)的实验电路、电路参数设计、仿真模拟情况和对实验电路的测试结果进行说明.
+	\subsection{方波发生器} 
+	
+	实验搭建的方波发生器电路如图6所示. 
+	
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=0.4\textwidth]{6}
+		\caption{方波发生器实验电路}
+	\end{figure}
+	
+	\subsubsection{电路参数设计}
+	
+	方波发生器电路图见图6. 其中, 记稳压管作用下输出电压幅度的绝对值为$V_z$.
+	
+	则, 电路的正反馈系数如式1所示.
+	\begin{equation}
+    	F = \frac{R_1}{R_1 + R_2}
+	\end{equation}
+	再结合基本电路原理, 可知电容两端电压随时间的变化规律为
+	\begin{equation}
+		v_C(t) = V_z \left[1 - (1 + F) e^{-\frac{t}{R C}}\right]
+	\end{equation}
+	设$T$为方波周期, 则可列出方程对其求解
+	\begin{equation}
+		v_C\left(\frac{T}{2}\right) = V_z \left[1 - (1 + F) e^{-\frac{T}{2 R C}}\right] = F V_z
+	\end{equation}
+	最终, 解得方波周期
+	\begin{equation}
+		T = 2 R_t C \ln \frac{1 + F}{1 - F} = 2 R_t C \ln \left(1 + 2 \frac{R_f}{R_1}\right)
+	\end{equation}
+	
+	由于实验条件限制, 取值无法做到相对自由, 需要有一定的斟酌. 首先, 取$R_1 = R_2 = 10k \Omega$, $C_1 = 47nF$. 期望输出1kHz方波, 则其周期$T = 1 ms$. 将上述数据带入式4, 解得$R_f = 9683 \Omega$. 显然, 实验条件下, 这一取值难以达成, 故使用电位器, 调节其阻值为9683 $\Omega$.
+	
+	\subsubsection{仿真模拟情况}
+	
+	根据3.1.1节所述计算结果, 在Mulitisim中搭建电路, 进行仿真模拟, 输出波形如图7所示. 
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=0.4\textwidth]{7}
+		\caption{方波发生器仿真模拟情况}
+	\end{figure}
+	可见，输出信号周期为1ms，达成输出1kHz方波的期望目标. 且输出方波幅值约为5.8V, 基本符合稳压管期望特性. 故可以认为设计无误.
+	
+	\subsubsection{实验电路测试}
+	
+	对理想方波信号做Fourier分析, 保留前三项, 其结果如式5所示. 可见, 其基波、三次谐波、五次谐波幅值比应为1:1/3:1/5, 且没有偶次谐波分量. 
+	
+	\begin{equation}
+		s(t) \approx A_o \left( \sin(\omega t) + \frac{1}{3} \sin(3\omega t) + \frac{1}{5} \sin(5\omega t) \right)
+	\end{equation}
+	
+	利用双踪示波器MATH--FFT功能, 对实验搭建的方波发生器的输出信号进行分析, 所得结果如表1所示. 可见, 其基波、三次谐波、五次谐波幅值比基本符合1:1/3:1/5, 可以认为该部分电路设计正确.
+	
+	\begin{table}[h]
+		\centering
+		\caption{方波发生器实验测量情况}
+		\begin{tabular}{c c c c}
+			\hline
+			f(Hz) & Gain(dB) & $\Delta$Gain(dB) & 相对基波的幅值比 \\
+			\hline
+			1k & 18.6 & 0 & 1\\
+			3k & 9.20 & -9.4 & 0.338\\
+			5k & 3.6 & -15.0 & 0.178\\
+			\hline
+		\end{tabular}
+	\end{table}
+	
+	\subsection{压控电压源型二阶有源低通滤波电路}
+	
+	低通滤波器实验电路如图8所示. 该电路结构旨在滤出方波信号的基波, 即1kHz正弦波, 而将其余高次谐波分量滤除.
+	
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=0.4\textwidth]{8}
+		\caption{低通滤波器实验电路}
+	\end{figure}
+	
+	\subsubsection{电路参数设计}
+	
+	为了实现较窄的过渡带和较高的阻带衰减, 预计取低通滤波器品质因数$Q > 5$, 则根据
+	\begin{equation}
+		Q = \frac{1}{3 - A_{vf}}
+	\end{equation}
+	进行计算, 需要$A_{vf} > 2.8$, 再结合低通滤波器电压增益公式
+	\begin{equation}
+		A_0 = A_{vf} = 1 + \frac{ R_f }{ R_3 }
+	\end{equation}
+	进一步计算, 需要保证$\frac{R_f }{ R_1} > 1.8$, 再结合实际实验条件, 取$R_f = 18.2k\Omega$, $R_3 = 10k \Omega$. 在这种取值条件下, 实际$Q = 5.56$, 符合期望, 且不会发生自激振荡.
+	
+	除品质因数外, 还需设置电路的截止频率. 记$R = R_1 = R_2$, $C = C_1 = C_2$. 由于基波频率为1kHz, 故直接设定滤波器截频$f_c = 1kHz$. 结合实验条件, 选用$10nF$电容, 根据式8计算所需电阻阻值约为$14.7k \Omega$.
+
+	\begin{equation}
+		f_c = \frac{1}{2 \pi RC}
+	\end{equation}
+	
+	\subsubsection{仿真模拟情况}
+	
+	根据3.2.1节所述计算结果, 在Mulitisim中搭建电路, 进行仿真模拟, 输出波形如图9所示. 可见, 输出波形为1kHz正弦波, 且基本无法观察到失真, 故可认为电路设计正确.
+	
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=0.4\textwidth]{9}
+		\caption{低通滤波器仿真模拟情况}
+	\end{figure}
+	
+	\subsubsection{实验电路测试}
+	
+	根据图8所示电路图在面包板上搭建电路, 利用双踪示波器MATH--FFT功能测量低通滤波器输出波形的谐波分量的相对衰减情况. 测量结果如表2所示.
+	
+	\begin{table}[h]
+		\centering
+		\caption{低通滤波器实验测量情况}
+		\begin{tabular}{c c c}
+			\hline
+			f(Hz) & Gain(dB) & $\Delta$Gain(dB)  \\
+			\hline
+			1k & 18.6 & 0 \\
+			3k & -20.6 & -34.6 \\
+			5k & -36.6 & -50.6 \\
+			\hline
+		\end{tabular}
+	\end{table}
+	
+	可见, 方波信号输入低通滤波器后, 其高次谐波分量有明显衰减, 说明电路能够行使与其功能, 可以证明电路设计正确.
+	
+	\subsection{压控电压源型二阶带通滤波电路}
+	
+	实验中, 需要两个压控电压源型二阶带通滤波电路. 分别滤出三次谐波和五次谐波. 滤出三次谐波和五次谐波的压控电压源型二阶带通滤波电路分别如图10和图11所示. 
+	
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=0.4\textwidth]{10}
+		\caption{三次谐波带通滤波器电路图}
+	\end{figure}
+	
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=0.4\textwidth]{11}
+		\caption{五次谐波带通滤波器电路图}
+	\end{figure}
+	
+	\subsubsection{电路参数设计}
+	
+	滤出三次谐波的带通滤波器和滤出五次谐波的带通滤波器的参数计算方法完全相同, 故在此只对滤出三次谐波的带通滤波器的参数设计方法进行详细计算和讨论. 滤出五次谐波的带通滤波器元件参数的选择见图11.
+	
+	$A_{vf}$, $R_f$, $R_1$, 与品质因数$Q$的关系见式6与式7所示. 为了确保所设计带通滤波器对基波和五次谐波的抑制程度, 品质因数 $Q$ 的取值需要足够大, 在此取为50, 计算得到$A_{vf} = 2.98$, 故取电阻 $R_f = 19.8k \Omega$, $R_1 = 10k \Omega$.
+	
+	除品质因数外, 还需对电路的中心频率进行确定. 带通滤波器中心频率的计算方法如式9所示. 结合计算结果和实际实验条件, 取$ R = R_2 = \frac{1}{2} R_3 = 5k \Omega $, 电容$ C = 10nF $.
+	
+	\begin{equation}
+		f_0 = \frac{1}{2 \pi RC }
+	\end{equation}
+	
+	滤出五次谐波的带通滤波器元件参数选取与上述方法完全一致, 不再赘述.
+	
+	\subsubsection{仿真模拟情况}
+	
+	\textbf{1. 三次谐波}
+	
+	对图10所示电路进行仿真模拟, 接收方波输入后, 其输出波形如图12中蓝色图像所示. 
+	
+	可观察到稍有失真, 但考虑到在实验条件下, 只使用二阶带通滤波器进行设计, 这种失真也在可接受的范围内, 故仍可认为电路设计无误.
+	
+	\textit{若使用更高阶的滤波器, 这种失真或许能得到有效减少? 这也是一个值得思考和测试的问题.}
+	
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=0.4\textwidth]{12}
+		\caption{三次谐波带通滤波器仿真模拟情况}
+	\end{figure}
+	
+	\textbf{2. 五次谐波}
+	
+	对图11所示电路进行仿真模拟, 接收方波输入后, 其输出波形如图13中蓝色图像所示. 
+	
+	可观察到稍有失真. 但考虑到实验条件下只使用二阶滤波器, 这种失真也在可接受的范围内, 故仍可认为电路设计无误.
+	
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=0.4\textwidth]{13}
+		\caption{五次谐波带通滤波器仿真模拟情况}
+	\end{figure}
+	
+	\subsubsection{实验电路测试}
+	
+	\textbf{1. 三次谐波}
+	
+	按图10所示电路图搭建电路, 输入1kHz方波, 使用双踪示波器MATH--FFT功能测量滤出三次谐波的带通滤波器输出波形的各谐波分量衰减情况, 其测量结果如表3所示. 观察到该带通滤波器对基波和五次谐波的抑制情况较好, 能够正常行使预期的滤波功能, 故可认为电路设计正确.
+	
+	\begin{table}[h]
+		\centering
+		\caption{带通滤波器实验测试情况}
+		\begin{tabular}{c c c}
+			\hline
+			f(Hz) & Gain(dB) & $\Delta$Gain(dB)  \\
+			\hline
+			1k & -5.6 & -19.8 \\
+			3k & 14.2 & 0 \\
+			5k & -11.6 & -26.8 \\
+			\hline
+		\end{tabular}
+	\end{table}
+	
+	\textbf{2. 五次谐波}
+	
+	按图11所示电路图搭建电路, 输入1kHz方波, 滤出五次谐波的带通滤波器输出特性测量结果如表4所示. 观察到该带通滤波器对基波和三次谐波的抑制情况较为合理, 衰减约为$1/8$, 基本能正常行使预期的滤波功能, 故可认为电路设计正确.
+	
+	\begin{table}[h]
+		\centering
+		\caption{带通滤波器实验测试情况}
+		\begin{tabular}{c c c}
+			\hline
+			f(Hz) & Gain(dB) & $\Delta$Gain(dB)  \\
+			\hline
+			1k & -11.2 & -17.6 \\
+			3k & -6.8 & -13.2 \\
+			5k & 6.4 & 0 \\
+			\hline
+		\end{tabular}
+	\end{table}
+	
+	\subsection{一阶超前全通滤波电路} 
+	
+	一阶超前全通滤波电路即为移相器, 在本实验中, 注意到滤出的三次谐波与基波之间不符合合成方波所需的相位同步要求, 需使用移相器处理; 而五次谐波基本符合这一要求, 故不对五次谐波设置移相器. 三次谐波所需移相器电路如图14所示. 
+	
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=0.4\textwidth]{14}
+		\caption{移相器电路图}
+	\end{figure}
+	
+	\subsubsection{电路参数设计}
+	
+	根据电路基本原理, 移相器电路的移向数值如式10所示.
+	\begin{equation}
+		\varphi (\omega) = 180^\circ + \arctan \left( \frac{R_3 \, C_2 \, \omega}{-1} \right) - \arctan \left( \frac{R_3 \, C_2 \, \omega}{1} \right) = 180^\circ - 2\arctan (R_3 \, C_2 \, \omega)
+	\end{equation}
+	
+	而实验中注意到, 由于实验条件下电阻和电容的标称值与实际值差距对滤波器的影响, 实际电路需要的相位改变数值与仿真模拟并不相同. 考虑到电路在实际实验中的应用, 本部分将基于实验条件(而非仿真)的需要, 对移相器电阻和电容的取值加以讨论. 
+	
+	以方波上升沿为基准, 实验测量发现, 只需对三次谐波的相位进行超前处理. 基波的附加相位$\phi_1 = 44.87^\circ$, 三次谐波的附加相位$\phi_3 = 29.30^\circ$, 则所需移向角度为$\Delta \phi_3 = 3\phi_1 - \phi_3 = 105.31^\circ$. 而三次谐波$\omega_3 = 3000 \times 2\pi s^{-1}$, 故根据式(10), 计算得到电阻和电容的取值可以设置为$R_3 = 4070 \Omega, C_2 = 10nF$. 受实验条件限制, 无法直接实现$R_3$的取值, 故采用标称值为$4.7k\Omega$但实际值较小的电阻和$33k\Omega$电阻并联作为移相器电路中的$R_3$. 
+	
+	仿真模拟中电阻和电容的取值已经在图14中列出, 其计算方法也与实验条件下电阻电容取值的计算方法相同, 故不加赘述.
+	
+	\subsubsection{仿真模拟情况}
+	
+	移相器的仿真模拟结果如图15所示. 图中, 左侧示波器为移相前的三次谐波和基波对比, 右侧示波器为移相后的三次谐波和基波对比. 通过对比可知, 所设计的移相器电路能够正常行使其功能, 可以认为电路设计正确.
+	
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=0.4\textwidth]{15}
+		\caption{移相器仿真模拟情况}
+	\end{figure}
+	
+	\subsubsection{实验电路测试}
+	
+	使用双踪示波器对比移相后的三次谐波和基波. 可以观察到二者已经符合合成方波的同步要求. 故移相器能够正常行使预期功能, 认为电路设计正确.
+	
+	\subsection{反向加法器} % 再测量实验电路下各部分谐波幅值, 要在3.5.1节用到
+	
+	为了将已调节至相位相同的基波, 三次谐波和五次谐波重新合成为方波, 实验使用反向加法器. 其电路如图16所示.
+	
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=0.4\textwidth]{16}
+		\caption{反向加法器电路图}
+	\end{figure}
+	
+	\subsubsection{电路参数设计}
+	
+	反向加法器的输出输入关系如式11所示. 
+	\begin{equation}
+		v_o = - \frac{R_f}{R_1} v_1 - \frac{R_f}{R_3} v_3 - \frac{R_f}{R_5} v_5
+	\end{equation}
+	
+	在实验和仿真模拟中, 都取$R_f = 1M \Omega$. 
+	
+	但需要注意的是, 由于实验条件下电阻和电容的标称值与实际值差距对滤波器的影响, 实际电路输出基波及各次谐波的幅度与仿真模拟的输出并不相同. 因此, 本部分电路中, 仿真模拟和实验电路中对电阻的取值并不完全相同. 考虑到本部分电路电阻取值的计算方法简单, 且3.4.1节中对实验电路的取值方法做详细讨论, 为避免重复, 在此, 对仿真模拟中电阻取值的方法做详细讨论, 而实验电路中电阻取值的计算方法与之相同, 故只在此列出其具体取值, 而对计算方法则不加赘述.
+	
+	\textbf{1. 仿真模拟}
+	
+	首先, 考虑到实验条件限制, 取$R_f = 1M \Omega$, 在此基础上根据仿真模拟中各谐波分量的幅值确定电阻$R_1$, $R_3$ 和$R_5$的取值.
+	
+	使用示波器测量各次谐波幅值. 测量结果, 合成方波所需各次谐波的幅度和应衰减的比例, 以及根据式11计算出的对应电阻取值如表5所示.
+	
+	\begin{table}[h]
+		\centering
+		\caption{各次谐波分量仿真模拟输出情况}
+		\begin{tabular}{c c c c c}
+			\hline
+			f(Hz) & $V_p$(V) & 合成方波所需的 $V_p$ & 应衰减比例 & 对应电阻取值($\Omega$)  \\
+			\hline
+			1k & 8 & 8 & 1 & 1M\\
+			3k & 5.8 & 2.67 & 0.46 & 2.17M\\
+			5k & 10 & 1.6 & 0.16 & 6.25M\\
+			\hline
+		\end{tabular}
+	\end{table}
+	
+	\textbf{2. 实验参数} 
+	
+	元件参数的计算方法同上所述. 实验中, 测量得到滤波器输出的基波, 三次谐波和五次谐波的幅值分别为$V_{p1} =  8.4V$, $V_{p3} =  7.1V$和$V_{p5} =  3.9V$, 故对应电阻阻值选取为: $R_1 = 1M\Omega$, $R_3 = 2.5M\Omega$ 和$R_5 = 2.33M\Omega$.
+	
+	\subsubsection{仿真模拟情况}
+	
+	反相加法器仿真模拟电路如图16所示, 输出波形如图17所示. 观察到输出波形为近似方波, 频率1kHz, 且基本对称. 故可认为电路设计无误.
+	
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=0.4\textwidth]{17}
+		\caption{反向加法器仿真模拟情况}
+	\end{figure}
+	
+	\subsubsection{实验电路测试} 
+	
+	根据图16所示电路图搭建电路, 输入基波, 三次谐波和五次谐波信号. 合成得到(近似的)方波信号, 如图18所示. 观察到, 输出方波具有较高的对称性. 使用双踪示波器MATH--FFT功能对其进行分析, 结果如表6所示. 可见, 其各次谐波分量基本符合1:1/3:1/5的理想特性, 故认为电路功能正常, 设计无误.
+	
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=0.4\textwidth]{18}
+		\caption{反向加法器实验电路测试情况}
+	\end{figure}
+		
+	\begin{table}[h]
+		\centering
+		\caption{反向加法器输出方波的FFT分析}
+		\begin{tabular}{c c c c}
+			\hline
+			f(Hz) & Gain(dB) & $\Delta$Gain(dB) & 相对基波的幅值比 \\
+			\hline
+			1k & 13.6 & 0 & 1\\
+			3k & 4.8 & -8.8 & 0.363\\
+			5k & 1.0 & -12.6 & 0.234\\
+			\hline
+		\end{tabular}
+	\end{table}
+	
+	\subsection{整体实验电路}
+	
+	整体实验电路如图19所示. 其中需要注意的是, 在实际的实验电路中, 测量发现五次谐波与基波之间无需设置移相器. 但在仿真模拟之中, 却有明显需要.  其原因可能是实验条件下电阻和电容实际值和标称值存在差异, 由此导致仿真模拟和实际实验结果的差异.
+	
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=1.0\textwidth]{19} 
+		\caption{整体实验电路图}
+	\end{figure}
+	
+	\subsubsection{实验电路测试}
+	
+	根据实验要求, 需要对电路噪声进行测量. 测量结果如表7所示. 最终, 计算得到电路平均噪声幅度为$\Delta V_{noise} = 29.5mV$. 噪声极低, 可认为电路整体设计较为合理.
+	
+	\begin{table}[h]
+		\centering
+		\caption{电路整体噪声的实验测量情况}
+		\begin{tabular}{c c c c}
+			\hline
+			f(Hz) & $\Delta$Gain(dB, 相对于基波) & 相对于基波的衰减比例 & 幅度$(V_p)$ \\
+			\hline
+	        4k & -27.20 & 0.0091 & 0.057 \\
+			6k & -32.60 & 0.0051 & 0.032 \\
+			8k & -38.20 & 0.0025 & 0.016 \\
+            10k & -39.80 & 0.0021 & 0.013 \\
+			\hline
+		\end{tabular}
+	\end{table}
+	
+	\section{误差分析}
+	
+	\subsection{交流小信号测量}
+	
+	实验测量所用双踪示波器在测量幅值较小的交流小信号时, 波形散布严重,  难以从示波器显示波形中找出准确的交流信号峰峰值. 实验中, 为避免这一误差, 尽量在保证不失真的前提下, 设置较大的输入信号, 确保待测信号够大, 能够准确测量.
+	
+	\subsection{示波器FFT图像不稳}
+	
+	实验中注意到, 使用双踪示波器MATH-FFT功能时, 其计算结果会显示为折线图, 但该图像并不稳定, 很难准确测量. 谐波失真部分的测量结果可能出现较为严重的误差. 实验测量中, 取抖动的中间值, 以求尽量避免此误差.
+	
+	\subsection{元件实际值与标称值间存在较显著差异}
+	
+	实验箱中元器件标称值与实际值有较大误差. 其中, 电容的数值偏差尤其严重, 约在10\%左右, 导致计算和实际测量结果之间存在较大偏差.
+	
+	\subsection{实验条件限制电阻和电容取值}
+	
+	实验条件下, 可用的电阻和电容取值及其有限, 导致计算出各级电路所需的理想值之后, 不能直接用于电路搭建中, 需要再考虑是否能够取到. 这就使得理想情况与实际情况之间的差距被加大.
+	
+	\section{总结}
+	
+	本实验成功实现了1kHz方波的产生、分解与合成，通过理论计算、仿真模拟与实际电路搭建相结合的方式，验证了方波可由基波与奇次谐波合成的傅里叶分析原理。主要成果如下：
+	
+	1. \textbf{方波发生器设计}：
+	
+	基于运放构建的方波发生电路输出1kHz方波信号，FFT分析显示其基波(1kHz)、三次谐波(3kHz)和五次谐波(5kHz)幅值比接近理论值1:1/3:1/5，实测值分别为1:0.338:0.178.
+	
+	2. \textbf{滤波电路实现}：
+	
+	二阶低通滤波器($f_c=1kHz$)有效提取基波信号，对3kHz/5kHz谐波衰减达34.6dB/50.6dB. 二阶带通滤波器分别提取3kHz(中心频率3kHz)和5kHz(中心频率5kHz)谐波分量，通带外信号衰减>13dB. 滤波器$Q$值设计合理($Q<3$)，确保电路稳定无自激振荡.
+	
+	3. \textbf{信号合成验证}：
+	
+	采用移相器校正三次谐波相位差，使各分量相位一致.
+	通过反向加法器按1:1/3:1/5权重合成近似方波.
+	合成波形谐波分析显示幅值比1:0.363:0.234，与理想值偏差<7.2\%.
+	
+	4. \textbf{误差控制}：
+	系统噪声水平低($V_{pp}=29.5mV$).
+	针对元件标称值偏差(电容误差约10\%)采用结合标称值和实际测量结果的方法挑选元件.
+	
+	实验表明，多级运放电路协同工作可实现复杂信号处理功能，但元件精度对滤波器性能影响显著.
+	
+	\newpage
+	
+	\section{\textit{致谢}}
+	
+	\textit{真诚感谢指导教师方元老师对实验过程中笔者种种问题的耐心解答.}
+	
+	\textit{此外, 这也是笔者首次尝试使用 \LaTeX 编写实验报告, 但显然, 不会是最后一次. 这也是《模拟电路实验》课程带给笔者的收获之一.	}
+	\newpage
+	
+	\section{附件}
+	
+	\textbf{实验数据} % 还没上传捏
+	
+	\textit{纸质版实验记录已拍照上传至github, 可进入下方链接查阅.}
+	
+	\textit{https://github.com/yz-Gao/Report-of-Analog-Circuit-Experiment}
+	
+	
+\end{document}
